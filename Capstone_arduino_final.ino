@@ -3,7 +3,7 @@
 
 #define col 5
 #define row 1
-#define TEMP0 60
+#define TEMP0 65
 
 const int touchSensor = 2;
 int touchState = 0;
@@ -30,6 +30,7 @@ void setup() {
   pinMode(BLUE, OUTPUT);
   pinMode(tempSensor, INPUT);
   pinMode(heatPad, OUTPUT);
+  previousTouchState = digitalRead(touchSensor);
 }
 
 void turnOn() {
@@ -44,7 +45,7 @@ void turnOn() {
   Serial.println("LED: BLUE");
 
   digitalWrite(heatPad, HIGH);
-  //flag_tempover = true;
+  flag_tempover = true;
 }
 
 void turnOff() {
@@ -66,15 +67,18 @@ void act() {
   lcd.print(temp);
   lcd.setCursor(col+3, row);
   lcd.print("'C");
-  //lcd.noCursor();
+  lcd.noCursor();
   delay(100);
   Serial.print("LCD: ");
   Serial.print(temp);
   Serial.println("'C");
 
-  if(temp >= TEMP0) {
-    makeColor(255, 0, 0);
-    Serial.println("LED: RED");
+  if(flag_tempover == true) {
+    if(temp >= TEMP0) {
+      makeColor(255, 0, 0);
+      Serial.println("LED: RED");
+      flag_tempover = false;
+    }
   }
 }
 
@@ -90,8 +94,8 @@ int tmp36conv(double readVal) {
   return (int)temp;
 }
 
-int lm35conv(double readVal) {
-  double temp = readVal * 500.0 / 1024.0;
+int lm35conv(float readVal) {
+  float temp = readVal * 500.0 / 1024.0;
   return (int)temp;
 }
 
@@ -104,7 +108,7 @@ void loop() {
       if(flag_onoff == 0) turnOn();
       else if(flag_onoff == 1) turnOff();
     }
-    delay(50);
+    delay(10);
   }
 
   previousTouchState = touchState;
